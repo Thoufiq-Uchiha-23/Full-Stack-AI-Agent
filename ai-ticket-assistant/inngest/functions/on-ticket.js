@@ -1,9 +1,9 @@
-import { inngest } from "../client";
+import { inngest } from "../client.js";
 import Ticket from "../../models/ticket.js";
 import User from "../../models/user.js";
 import { NonRetriableError } from "inngest";
-import { sendMail } from "../../utils/nodemailer";
-import analyzeTicket from "../../utils/ai";
+import { sendMail } from "../../utils/nodemailer.js";
+import analyzeTicket from "../../utils/ai.js";
 
 export const onTicketCreated = inngest.createFunction(
   { id: "on-ticket-created", retries: 2 },
@@ -61,8 +61,25 @@ export const onTicketCreated = inngest.createFunction(
             })
         }
         await Ticket.findByIdAndUpdate(ticket._id, {assignedTo: user?._id || null})
+
         return user
       });
-    } catch (error) {}
+      await step.run("send-email-notification", async () => {
+        if(moderator) {
+           const finalTicket = await Ticket.findById(ticket._id)
+
+           await sendMail(
+            moderator.email,
+            "Ticket assigned",
+            `A new ticket has been assigned to you ${finalTicket.title}`
+           )
+        }
+      })
+
+      return {success: true}
+    } catch (error) {
+      console.error("❌ Error running the step", error)
+      return {success: false}
+    }
   }
 );
