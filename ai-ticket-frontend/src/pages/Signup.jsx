@@ -1,43 +1,54 @@
-import React, { useState } from 'react'
-import { useNavigate} from "react-router-dom"
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
-  const [form, setForm] = useState({email: "", password: "  "})
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setForm({...form, [e.target.name]: e.target.value})
-  }
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSignup = async (e) => {
-    e.preventDefault();
-    setLoading(true)
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    let data;
     try {
-      const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type" : "application/json"
-        },
-        body: JSON.stringify(form)
-      })
+      data = await res.json();
+    } catch {
+      const text = await res.text();
+      throw new Error("Unexpected response: " + text);
+    }
 
-      const data = await res.jspn()
+    console.log("Signup response:", data);
 
-      if(res.ok) {
-        localStorage.setItem("token", data.token)
-        localStorage.setItem("user", JSON.stringify(data.user))
-        navigate("/")
-      } else {
-        alert(data.message || "signup failed")
+    if (res.ok) {
+      if (data.token) {
+        localStorage.setItem("token", data.token);
       }
-    } catch (error) {
-      alert("Signup - something went wrong", error)
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+      navigate("/");
+    } else {
+      alert(data.message || "Signup failed");
     }
-    finally {
-      setLoading(false)
-    }
+  } catch (error) {
+    console.error("Signup error:", error);
+    alert("Signup - something went wrong");
+  } finally {
+    setLoading(false);
   }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-base-200">
@@ -77,7 +88,7 @@ const Signup = () => {
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Signup
+export default Signup;
