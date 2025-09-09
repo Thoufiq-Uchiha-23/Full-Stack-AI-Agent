@@ -22,7 +22,7 @@ const Login = () => {
         body: JSON.stringify(form)
       })
 
-      const data = await res.jspn()
+      const data = await res.json()
 
       if(res.ok) {
         localStorage.setItem("token", data.token)
@@ -32,7 +32,7 @@ const Login = () => {
         alert(data.message || "signup failed")
       }
     } catch (error) {
-      alert("Signup - something went wrong", error)
+      alert("Login - something went wrong", error)
     }
     finally {
       setLoading(false)
