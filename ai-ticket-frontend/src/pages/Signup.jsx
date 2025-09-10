@@ -20,8 +20,11 @@ const Signup = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
+    console.log(res)
+    console.log("Sending request to:", `${import.meta.env.VITE_SERVER_URL}/auth/signup`, form);
 
     let data;
+    console.log("here is the start")
     try {
       data = await res.json();
     } catch {
@@ -44,16 +47,17 @@ const Signup = () => {
     }
   } catch (error) {
     console.error("Signup error:", error);
-    alert("Signup - something went wrong");
+    // alert("Signup - something went wrong");
   } finally {
     setLoading(false);
   }
+  console.log("look im here")
 };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-base-200">
       <div className="card w-full max-w-sm shadow-xl bg-base-100">
-        <form onSubmit={handleSignup} className="card-body">
+        <form onSubmit={handleSignup} method="POST" className="card-body">
           <h2 className="card-title justify-center">Sign Up</h2>
 
           <input
