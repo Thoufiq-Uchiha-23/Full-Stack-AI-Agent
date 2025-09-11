@@ -5,9 +5,14 @@ import { inngest } from "../inngest/client.js";
 
 export const signup = async (req, res) => {
   const { email, password, skills = [] } = req.body;
+  console.log(req.body)
 
   try {
-    const hashed = bcrypt.hash(password, 10);
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
     const user = await User.create({ email, password: hashed, skills });
 
     // Fire inngest event
@@ -17,15 +22,17 @@ export const signup = async (req, res) => {
         email,
       },
     });
-
+    console.log(user)
     const token = jwt.sign(
       { _id: user._id, role: user.role },
       process.env.JWT_SECRET
     );
-
-    res.json({ user, token });
+    console.log(token)
+    return res.status(201).json({ user, token });
+    console.log("user created:", user, token)
   } catch (error) {
-    res.status(500).json({ error: "Signup failed", details: error.message });
+    console.log("bro signup error", error)
+    return res.status(500).json({ error: "Signup failed", details: error.message });
   }
 };
 
